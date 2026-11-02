@@ -1,0 +1,798 @@
+/* GLOBAL STYLESHEET */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "expressway", sans-serif;
+  background: #fff;
+  color: #000;
+}
+
+/* HEADER — logo top left, nav top right; fixed so both stay put while scrolling */
+.site-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+}
+.site-header a { pointer-events: auto; }
+
+.logo { display: block; }
+.logo img {
+  display: block;
+  width: min(175px, 12.15vw);
+  height: auto;
+  view-transition-name: site-logo; /* morphs between sizes when changing pages */
+}
+/* home keeps its larger logo; :where() keeps specificity low so the mobile rule still wins */
+:where(body:not(.subpage)) .logo img { width: min(260px, 18vw); }
+
+/* PAGE TRANSITIONS — the logo eases between the home and inner-page sizes */
+@view-transition { navigation: auto; }
+::view-transition-group(site-logo) {
+  animation-duration: 0.5s;
+  animation-timing-function: ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
+}
+
+.site-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 10px 10px 0 0;
+}
+.site-nav a {
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.41;
+  color: #000;
+  text-decoration: none;
+}
+.site-nav a:hover,
+.site-nav a:focus-visible { text-decoration: underline; }
+
+/* CAROUSEL */
+.carousel {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  overflow: hidden;
+}
+.carousel-slides { position: absolute; inset: 0; }
+
+.slide {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s ease, visibility 0s linear 0.8s;
+}
+.slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.8s ease;
+}
+.slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--pos, center);
+}
+
+.slide figcaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 16px;
+  line-height: 1;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 0 1.8px #000;
+}
+.slide figcaption a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+.slide figcaption a:hover strong,
+.slide figcaption a:focus-visible strong { text-decoration: none; }
+.slide figcaption strong { font-weight: 800; }
+.slide figcaption span { font-weight: 600; }
+
+.carousel-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 17px;
+  z-index: 1;
+  display: flex;
+  gap: 5px;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 0.9px #000);
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 0.5px solid #fff;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.dot.is-active { background: #fff; }
+.dot:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .slide, .slide.is-active { transition: none; }
+}
+
+/* MOBILE — image on top, caption + dots below, nav stacked and centered */
+@media (max-width: 767px) {
+  body { display: flex; flex-direction: column; }
+  .site-header { position: static; display: contents; }
+
+  .logo {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 2;
+    transform: translateX(-50%);
+  }
+  .logo img { width: min(478px, 108.6vw); }
+
+  .carousel {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+  .carousel-slides {
+    position: relative;
+    height: min(478px, 108.6vw);
+  }
+  .slide img {
+    height: min(478px, 108.6vw);
+    object-position: var(--pos-mobile, center);
+  }
+  .slide figcaption {
+    top: 100%;
+    bottom: auto;
+    padding-top: 20px;
+    font-size: 16px;
+    color: #000;
+    text-shadow: none;
+  }
+
+  .carousel-dots {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    justify-content: center;
+    margin-top: 61px;
+    transform: none;
+    filter: none;
+  }
+  .dot { border-color: #000; }
+  .dot.is-active { background: #000; }
+  .dot:focus-visible { outline-color: #000; }
+
+  .site-nav {
+    order: 1;
+    align-items: center;
+    padding: 56px 0;
+  }
+  .site-nav a { font-size: 48px; }
+}
+
+/* INNER PAGES — shared header + title */
+/* page content scrolls under the fixed header: keep the logo's cut-out letters
+   on solid white so text doesn't show through */
+.subpage .logo img { background: #fff; }
+
+.page-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  margin: 16px 0 32px;
+  /* long titles wrap between the logo and the nav instead of running under them */
+  padding: 0 max(min(175px, 12.15vw) + 24px, 170px);
+  font-weight: 800;
+  font-size: 48px;
+  line-height: 1.1;
+  text-align: center;
+}
+/* long titles with set line breaks: shrink so the longest line (--fit, in ems) still fits */
+.page-title--fit {
+  font-size: min(48px, (100vw - 2 * max(min(175px, 12.15vw) + 24px, 170px)) / var(--fit, 14));
+}
+
+/* Category buttons — image under a dark blurred veil; selected = clear image */
+.project-filters {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 32px;
+  max-width: 1090px;
+  margin: 0 auto;
+  padding: 0 min(175px, 12.15vw); /* lines up with the logo edge */
+  box-sizing: content-box;
+}
+.filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* short enough that the top of the project list shows below them */
+  height: clamp(120px, calc((100vh - 400px) / 2), 200px);
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: #000;
+  font: inherit;
+  cursor: pointer;
+}
+.filter img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--pos, center);
+}
+.filter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4.05px);
+  -webkit-backdrop-filter: blur(4.05px);
+  transition: opacity 0.3s ease;
+}
+.filter[aria-pressed="true"]::after { opacity: 0; }
+.filter span {
+  position: relative;
+  z-index: 1;
+  font-weight: 800;
+  font-size: clamp(14px, 1.53vw, 22px);
+  line-height: 1.2;
+  color: #fff;
+  text-shadow: 0 0 1.8px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.3s ease;
+}
+.filter[aria-pressed="true"] span { opacity: 0; }
+.filter:hover span,
+.filter:focus-visible span { text-decoration: none; }
+.filter:focus-visible { outline: 2px solid #000; outline-offset: 3px; }
+
+/* Project index — every item links to its project */
+.project-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  /* fixed height that fits the longest names, so "show more" doesn't resize anything;
+     1fr keeps all rows equal if a narrow screen ever needs more room */
+  grid-auto-rows: minmax(144px, 1fr);
+  gap: 32px;
+  max-width: 1090px;
+  margin: 32px auto;
+  padding: 0 min(175px, 12.15vw);
+  box-sizing: content-box;
+  list-style: none;
+}
+.project-list li[hidden] { display: none; }
+.project-list a {
+  display: flex;
+  flex-direction: column; /* year sits on its own line under the name */
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 4px 8px;
+  border: 1px solid #000;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  font-size: 20px; /* matches the studio page's name lists */
+  line-height: 1.41;
+  text-align: center;
+  color: #000;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+.project-list a:hover,
+.project-list a:focus-visible { background: rgba(0, 0, 0, 0.15); }
+.project-list a:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+
+/* News list — same buttons as projects: publisher, article title, then date */
+.news-list { grid-auto-rows: minmax(231px, 1fr); } /* fits the tallest item, so "show more" doesn't resize */
+.news-list .role:not(time) { /* very long headlines end in "…" after six lines */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
+  overflow: hidden;
+}
+/* news-only sizes — projects and studio keep 20px names / 15px roles */
+.news-list a { font-size: 18px; font-weight: 700; } /* publisher; .role keeps title + date light */
+.news-list time { font-size: 13px; font-style: italic; }
+
+/* Hover thumbnail — project image fills the button behind the name */
+.project-list a {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: background-color 0.2s ease, color 0.3s ease;
+}
+.project-list a.has-thumb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), var(--thumb) center / cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.project-list a.has-thumb:hover,
+.project-list a.has-thumb:focus-visible {
+  color: #fff;
+  text-shadow: 0 0 1.8px #000;
+}
+.project-list a.has-thumb:hover::before,
+.project-list a.has-thumb:focus-visible::before { opacity: 1; }
+
+/* "show more" + contact "send" — same outlined, lightly shaded box as the project/news buttons */
+.show-more,
+.send {
+  padding: 4px 16px;
+  border: 1px solid #000;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  font: inherit;
+  font-size: 20px;
+  line-height: 1.41;
+  color: #000;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.show-more:hover,
+.show-more:focus-visible,
+.send:hover,
+.send:focus-visible { background: rgba(0, 0, 0, 0.15); }
+.show-more:focus-visible,
+.send:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+
+.show-more {
+  display: block;
+  /* one project-button wide: the grid's width minus its gaps, split across its columns */
+  --grid: min(1090px, 100% - 2 * min(175px, 12.15vw));
+  --cols: 5;
+  --gap: 32px;
+  width: calc((var(--grid) - (var(--cols) - 1) * var(--gap)) / var(--cols));
+  margin: 0 auto 32px;
+}
+.show-more[hidden] { display: none; }
+
+/* STUDIO PAGE */
+.page-title--flush { margin-bottom: 0; }
+
+.studio section {
+  max-width: 1090px;
+  margin: 0 auto 64px;
+  padding: 0 min(175px, 12.15vw);
+  box-sizing: content-box;
+  font-size: 20px;
+  line-height: 1.41;
+}
+.studio h2 {
+  margin: 0;
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.41;
+}
+.studio p { margin: 0 0 1.41em; }
+.studio section p a { color: inherit; }
+
+.story .show-more { --grid: 100%; margin: 0 auto; } /* the story text is already grid-wide */
+
+.partners strong {
+  font-weight: 800;
+  font-size: 32px;
+}
+
+/* Partner rows — portrait centered in the left half, bio on the right */
+.partner {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+.partner-photo {
+  position: relative;
+  justify-self: center;
+  width: min(350px, 100%);
+  aspect-ratio: 1;
+  margin-top: 17px;
+  overflow: hidden;
+}
+/* oversized and offset to match each crop in the design */
+.partner-photo img {
+  position: absolute;
+  left: var(--x, 0);
+  top: var(--y, 0);
+  width: var(--w, 100%);
+  max-width: none;
+  height: auto;
+}
+
+.staff {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 64px;
+}
+.staff ul {
+  margin: 0 0 1.41em;
+  padding: 0;
+  list-style: none;
+}
+.role {
+  font-weight: 300;
+  font-size: 15px;
+}
+
+/* CONTACT PAGE — office info left, inquiry form right */
+.contact { min-height: 100vh; } /* footer stays below the fold */
+.contact-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 545px));
+  justify-content: center;
+  /* top-aligned so resizing the message box doesn't shift the info column;
+     the padding centers the content in the viewport instead */
+  align-items: start;
+  padding: max(32px, calc((100vh - 776px) / 2)) min(175px, 12.15vw) 32px;
+  font-size: 20px;
+  line-height: 1.41;
+  text-align: center;
+}
+.contact h2,
+.contact h3 {
+  margin: 0;
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1.41;
+  text-transform: uppercase;
+}
+.contact h3 { font-size: 24px; }
+.contact p { margin: 0; }
+.contact-info a { color: inherit; text-decoration: none; }
+.contact-info a:hover,
+.contact-info a:focus-visible { text-decoration: underline; }
+
+.contact-group + .contact-group { margin-top: 1.41em; }
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 76px;
+}
+.contact .contact-applications { font-size: 32px; }
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.contact-form h2 { font-size: 32px; line-height: 56px; }
+
+.field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  text-align: left;
+}
+.field > span:first-child {
+  display: flex;
+  align-items: flex-end;
+  height: 32px;
+  padding-left: 8px;
+}
+.field input,
+.field textarea {
+  display: block;
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #000;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 16px;
+  color: #000;
+}
+.field textarea {
+  height: 200px;
+  min-height: 32px;
+  padding: 4px 8px;
+  resize: vertical;
+}
+.field input:focus-visible,
+.field textarea:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+
+/* Validation bubble — replaces the browser's (unstylable) one: black icon, no shadow */
+.field-error {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #000;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 15px;
+  line-height: 1.2;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 32px));
+}
+.field-error[hidden] { display: none; }
+.field-error::before { /* arrow pointing up at the field */
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 16px;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid #000;
+  border-left: 1px solid #000;
+  background: #fff;
+  transform: rotate(45deg);
+}
+.field-error .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background: #000;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+}
+
+.send { width: 250px; } /* same width as the .field text boxes */
+.send:disabled { cursor: wait; background: rgba(0, 0, 0, 0.05); }
+
+.form-status {
+  max-width: 250px;
+  font-size: 16px;
+  line-height: 1.41;
+}
+.form-status[hidden] { display: none; }
+.form-status.is-error { font-weight: 700; }
+
+/* PROJECT PAGES — hero, two text columns, info tables, image carousel */
+.project > :not(.page-title) {
+  width: min(1090px, 100% - 2 * min(175px, 12.15vw)); /* same gutters as the other pages */
+  margin: 0 auto 64px;
+}
+.project-hero {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1090 / 638;
+  object-fit: cover;
+}
+.project-text {
+  /* one text flow the browser splits into two equal-height columns */
+  columns: 2;
+  column-gap: 12px; /* columns split at the same line as the credits tables below */
+  orphans: 1; /* let paragraphs split at any line so the columns can even out */
+  widows: 1;
+  padding: 0 6px;
+  font-size: 20px;
+  line-height: 1.41;
+}
+.project-text ol,
+.project-text ul { padding-left: 30px; }
+/* blank line goes above each block (and is dropped at the top of a column),
+   which lets the browser balance the columns to within one line */
+.project-text > * { margin: 0; }
+.project-text > * + * { margin-top: 1.41em; }
+.project-text > h2 + * { margin-top: 0; }
+.project-text h2 { /* section labels within a description, e.g. "Found", "Design" */
+  font-weight: 800;
+  font-size: inherit;
+  line-height: inherit;
+  text-transform: uppercase;
+  break-after: avoid; /* never strand a label at the bottom of a column */
+}
+
+.credits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.project > .info-table { margin-bottom: 12px; } /* same gap as between the credits tables */
+.info-table {
+  display: flex;
+  flex-direction: column;
+}
+.info-table h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 75px;
+  margin: 0;
+  padding: 0 6px;
+  border: 1px solid #000;
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.41;
+  text-align: center;
+  text-transform: uppercase;
+}
+/* line breaks that only apply at one screen size, e.g. in long page titles */
+.br-mobile { display: none; }
+.info-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.41em 12px; /* blank line between groups */
+  flex: 1; /* side-by-side tables stay the same height */
+  align-content: start; /* extra height goes below the rows, not between them */
+  margin: 0;
+  padding: 6px; /* text never touches the borders */
+  border: 1px solid #000;
+  border-top: 0;
+  font-size: 20px;
+  line-height: 1.41;
+}
+.info-rows dt { font-weight: 700; text-align: right; }
+.info-rows dd { margin: 0; }
+
+/* uses the homepage carousel's slides and dots; sized to the design's 1090 × 897 frame */
+.project-carousel {
+  height: auto;
+  min-height: 0;
+}
+.project-carousel .carousel-slides {
+  position: relative;
+  aspect-ratio: 1090 / 897;
+}
+
+/* FOOTER */
+.site-footer {
+  position: relative;
+  display: flex;
+  height: 145px;
+  color: #fff;
+}
+/* black bar sits beside the logo — the logo's letters are transparent cut-outs */
+.site-footer::before {
+  content: "";
+  order: 1;
+  flex: 1;
+  background: #000;
+}
+.footer-logo img {
+  display: block;
+  width: 145px;
+  height: 145px;
+}
+.footer-info {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.2;
+  text-align: center;
+  pointer-events: none;
+}
+.footer-info p { margin: 0; }
+.footer-info .footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 120px;
+  margin-top: 1.2em;
+}
+.footer-info a {
+  color: inherit;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter::after, .filter span, .project-list a, .project-list a::before { transition: none; }
+}
+
+@media (max-width: 1023px) {
+  .project-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .show-more { --cols: 3; }
+}
+
+/* MOBILE — keep the logo/nav header in flow, two-up grids */
+@media (max-width: 767px) {
+  .subpage { display: block; }
+  .subpage .site-header { position: sticky; top: 0; display: flex; background: #fff; }
+  .subpage .logo { position: static; transform: none; }
+  .subpage .logo img { width: 96px; }
+  .subpage .site-nav { align-items: flex-end; padding: 8px 12px 0 0; }
+  .subpage .site-nav a { font-size: 20px; }
+
+  .page-title { min-height: 72px; margin: 16px 0; padding: 0 16px; font-size: 36px; }
+  .br-mobile { display: inline; }
+  .br-desktop { display: none; }
+  .page-title--fit { font-size: min(36px, (100vw - 32px) / var(--fit-mobile, 12)); }
+
+  .project-filters,
+  .project-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 0 16px;
+  }
+  .filter { height: auto; aspect-ratio: 1; }
+  .filter span { font-size: 20px; }
+  .project-list { margin-top: 32px; }
+  .project-list a { font-size: 17px; }
+  .news-list a { font-size: 15px; }
+  .show-more { --grid: 100% - 32px; --cols: 2; --gap: 12px; }
+
+  .studio section { padding: 0 16px; font-size: 17px; margin-bottom: 48px; }
+  .studio h2, .partners strong { font-size: 24px; }
+  .staff { grid-template-columns: minmax(0, 1fr); gap: 0; }
+
+  .project > :not(.page-title) { width: calc(100% - 32px); margin-bottom: 48px; }
+  .project-text { columns: 1; padding: 0; font-size: 17px; }
+  .credits { grid-template-columns: minmax(0, 1fr); gap: 48px; }
+  .info-table h2 { height: 60px; font-size: 24px; }
+  .info-rows { font-size: 17px; }
+  /* keep the design's proportions instead of the homepage's tall mobile crop */
+  .project-carousel .carousel-slides { height: auto; }
+  .project-carousel .slide img { height: 100%; }
+  .project-carousel .carousel-dots { margin-top: 24px; }
+  .partner { grid-template-columns: minmax(0, 1fr); }
+  .partner-photo { margin: 0 0 16px; }
+
+  .contact-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
+    min-height: 0;
+    padding: 0 16px 48px;
+    font-size: 17px;
+  }
+  .contact h2 { font-size: 22px; }
+  .contact h3 { font-size: 19px; }
+  .contact .contact-applications,
+  .contact-form h2 { font-size: 24px; }
+  .contact-links { gap: 0 24px; }
+
+  .site-footer { height: auto; min-height: 96px; }
+  .footer-logo img { width: 96px; height: 96px; }
+  .site-footer { order: 2; } /* below the homepage's reordered nav */
+  .site-footer::before { display: none; }
+  .footer-info {
+    position: static;
+    order: 1;
+    flex: 1;
+    padding: 16px;
+    background: #000;
+    font-size: 13px;
+  }
+  .footer-info .footer-links { gap: 4px 24px; }
+}
