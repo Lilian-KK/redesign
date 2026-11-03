@@ -24,27 +24,14 @@ body {
   display: block;
   width: min(175px, 12.15vw);
   height: auto;
-  view-transition-name: site-logo; /* morphs between sizes when changing pages */
 }
 /* home keeps its larger logo; :where() keeps specificity low so the mobile rule still wins */
 :where(body:not(.subpage)) .logo img { width: min(260px, 18vw); }
 
-/* PAGE TRANSITIONS — the page swaps instantly; only the logo eases between the home and inner-page sizes */
-@view-transition { navigation: auto; }
-/* no page crossfade: drop the old snapshot (two full-opacity snapshots would blend brighter) */
-::view-transition-old(root) { display: none; }
-::view-transition-new(root) { animation: none; }
-::view-transition-group(site-logo),
-::view-transition-old(site-logo),
-::view-transition-new(site-logo) {
-  animation-duration: 0.5s;
-  animation-timing-function: ease;
-}
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) { animation: none !important; }
-}
+/* PAGE TRANSITIONS — js/page-transition.js fades the page and eases the logo between sizes;
+   everything stays hidden until the script has placed the logo and started the fade-in */
+.page-enter .logo img { visibility: hidden; }
+.page-enter :is(.site-nav, main, .site-footer) { opacity: 0; }
 
 .site-nav {
   display: flex;
