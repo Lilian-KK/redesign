@@ -29,12 +29,21 @@ body {
 /* home keeps its larger logo; :where() keeps specificity low so the mobile rule still wins */
 :where(body:not(.subpage)) .logo img { width: min(260px, 18vw); }
 
-/* PAGE TRANSITIONS — the logo eases between the home and inner-page sizes */
+/* PAGE TRANSITIONS — queued one after another:
+   1. old page fades out, 2. logo eases between the home and inner-page sizes, 3. new page fades in */
 @view-transition { navigation: auto; }
-::view-transition-group(site-logo) {
+@keyframes page-fade-out { to { opacity: 0; } }
+@keyframes page-fade-in { from { opacity: 0; } }
+::view-transition-old(root) { animation: page-fade-out 0.25s ease both; }
+::view-transition-group(site-logo),
+::view-transition-old(site-logo),
+::view-transition-new(site-logo) {
   animation-duration: 0.5s;
   animation-timing-function: ease;
+  animation-delay: 0.25s; /* waits for the old page to fade out */
+  animation-fill-mode: both; /* holds the old size/position during the wait */
 }
+::view-transition-new(root) { animation: page-fade-in 0.25s ease 0.75s both; } /* waits for the logo */
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
   ::view-transition-old(*),
